@@ -1,5 +1,5 @@
 #Needed packages
-make pkg-config libxft-dev build-essential libpangoxft-1.0-0 libpango1.0-dev libasound2-dev libdbus-1-dev libx11-dev libxinerama-dev xorg
+make pkg-config libxft-dev build-essential libpangoxft-1.0-0 libpango1.0-dev libasound2-dev libdbus-1-dev libx11-dev libxinerama-dev xorg consolekit upower
 
 Install with `sudo apt-get install <list of packages>` on Debian/Ubuntu.
 
