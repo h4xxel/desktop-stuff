@@ -26,7 +26,8 @@ static int numupgrades() {
 	int upgrades = 0;
 	FILE *p;
 	
-	if(!(p = popen("apt-get --dry-run upgrade | grep ^Inst | wc -l", "r")))
+	//if(!(p = popen("apt-get --dry-run upgrade | grep ^Inst | wc -l", "r")))
+	if(!(p = popen("pacman -Qu | wc -l", "r")))
 		return 0;
 	
 	fscanf(p, "%i\n", &upgrades);
@@ -50,7 +51,7 @@ static void *get_upgrades(void *tmp) {
 static void update_manager() {
 	switch(fork()) {
 		case 0:
-			execlp("update-manager", "update-manager", NULL);
+			execlp("xterm", "xterm \"sh -c 'sudo pacman -Syu'\"", NULL);
 			exit(1);
 		
 		default:
