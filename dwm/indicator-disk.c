@@ -9,7 +9,7 @@
 typedef struct MountList MountList;
 struct MountList {
 	char *dir;
-	char usage[40];
+	char usage[64];
 	MountList *next;
 };
 

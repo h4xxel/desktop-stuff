@@ -84,19 +84,19 @@ static PowerBattery *battery_status(const char *path) {
 		return NULL;
 	}
 	
-	/*if(dbus_message_iter_get_arg_type(&args)!=DBUS_TYPE_VARIANT) {
-		dbus_message_unref(msg);
-		return track;
-	}
-	dbus_message_iter_recurse(&args, &array);*/
-	if(dbus_message_iter_get_arg_type(&array)!=DBUS_TYPE_ARRAY) {
+	if(dbus_message_iter_get_arg_type(&args)!=DBUS_TYPE_VARIANT) {
 		dbus_message_unref(msg);
 		return NULL;
 	}
+	/*dbus_message_iter_recurse(&args, &array);
+	if(dbus_message_iter_get_arg_type(&array)!=DBUS_TYPE_ARRAY) {
+		dbus_message_unref(msg);
+		return NULL;
+	}*/
 	
 	battery = calloc(1, sizeof(PowerBattery));
 	
-	for(dbus_message_iter_recurse(&array, &dict); (current_type=dbus_message_iter_get_arg_type(&dict)) != DBUS_TYPE_INVALID; dbus_message_iter_next(&dict)) {
+	for(dbus_message_iter_recurse(&args, &dict); (current_type=dbus_message_iter_get_arg_type(&dict)) != DBUS_TYPE_INVALID; dbus_message_iter_next(&dict)) {
 		char *element_key;
 		int element_type;
 		dbus_message_iter_recurse(&dict, &element);
@@ -173,7 +173,7 @@ PowerBattery *power_battery_status() {
 	
 	PowerBattery *battery = NULL;
 	
-	if(!(msg=dbus_message_new_method_call("org.freedesktop.UPower", "org.freedesktop.UPower", "/org/freedesktop/Upower", "org.freedesktop.UPower.EnumerateDevices")))
+	if(!(msg=dbus_message_new_method_call("org.freedesktop.UPower", "org.freedesktop.UPower", "/org/freedesktop/UPower", "org.freedesktop.UPower.EnumerateDevices")))
 		return NULL;
 	
 	if(!dbus_connection_send_with_reply(dbus.session.connection, msg, &pending, -1)) {
@@ -199,10 +199,13 @@ PowerBattery *power_battery_status() {
 	
 	/*if(dbus_message_iter_get_arg_type(&args)!=DBUS_TYPE_VARIANT) {
 		dbus_message_unref(msg);
-		return track;
+		return NULL;
 	}
 	dbus_message_iter_recurse(&args, &array);*/
-	if(dbus_message_iter_get_arg_type(&array)!=DBUS_TYPE_ARRAY) {
+	if(dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_ARRAY) {
+		char *test;
+		dbus_message_iter_get_basic(&args, &test);
+		
 		dbus_message_unref(msg);
 		return NULL;
 	}

@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <limits.h>
 
 #include "dwm.h"
 #include "indicator.h"
+#include "power.h"
 
 #define MENU_WIDTH 128
 
@@ -27,12 +29,24 @@ static Icon icon[] = {
 	{INT_MAX, "\uf213"},
 };
 
+static const char *state_text[] = {
+	[POWER_BATTERY_STATE_UNKNOWN] = "Unknown",
+	[POWER_BATTERY_STATE_CHARGING] = "Charging",
+	[POWER_BATTERY_STATE_DISCHARGING] = "Discharging",
+	[POWER_BATTERY_STATE_EMPTY] = "Empty",
+	[POWER_BATTERY_STATE_FULL] = "Full",
+	[POWER_BATTERY_STATE_PENDING_CHARGE] = "Pending Charge",
+	[POWER_BATTERY_STATE_PENDING_DISCHARGE] = "Pending Discharge",
+};
+
+static PowerBattery *battery;
+
 static void menu_open(Indicator *indicator) {
 	menu.selected=-1;
 	menu.x=selmon->mx+indicator->x-MENU_WIDTH+indicator->width;
 	menu.y=bh;
 	menu.w=MENU_WIDTH;
-	menu.h=bh*1;
+	menu.h=bh*4;
 	menu.window=XCreateSimpleWindow(dpy, root, 
 		menu.x, menu.y, menu.w, menu.h,
 		1, dc.sel[ColBorder], dc.norm[ColBG]
@@ -50,65 +64,93 @@ static void menu_close() {
 }
 
 int indicator_power_init(Indicator *indicator) {
-	FILE *cap, *stat;
+	if(!(battery = power_battery_status()))
+		return -1;
 	
-	if(!(cap = fopen("/sys/class/power_supply/BAT0/capacity", "r")))
-		return -1;
-	if(!(stat = fopen("/sys/class/power_supply/BAT0/status", "r"))) {
-		fclose(cap);
-		return -1;
-	}
-	fclose(stat);
-	fclose(cap);
 	return 0;
 }
 
 void indicator_power_update(Indicator *indicator) {
-	char percentage[10] = {0};
-	char status[20] = {0};
-	char *nl;
 	int i, p;
 	
-	FILE *cap = fopen("/sys/class/power_supply/BAT0/capacity", "r");
-	FILE *stat = fopen("/sys/class/power_supply/BAT0/status", "r");
+	free(battery);
+	battery = power_battery_status();
 	
-	fread(percentage, 10, 1, cap);
-	fread(status, 20, 1, stat);
-	if((nl = strchr(percentage, '\n')))
-		*nl = 0;
-	if((nl = strchr(status, '\n')))
-		*nl = 0;
-	if(!strcmp(status, "Charging"))
-		sprintf(indicator->text, " \uf211 %s%% ", percentage);
-	else {
-		p = atoi(percentage);
-		for(i = 0; i < sizeof(icon)/sizeof(Icon); i++) {
-			if(p < icon[i].percentage)
-				break;
-		}
-		if(p < icon[0].percentage)
-			sprintf(indicator->text, " <span foreground=\"red\">%s %s%%</span> ", icon[0].str, percentage);
-		else
-			sprintf(indicator->text, " %s %s%% ", icon[i].str, percentage);
+	if(!battery) {
+		sprintf(indicator->text, " \uf211 - %% ");
+		return;
 	}
 	
-	fclose(cap);
-	fclose(stat);
+	p = lround(battery->percentage);
+	
+	switch(battery->state) {
+		case POWER_BATTERY_STATE_CHARGING:
+		case POWER_BATTERY_STATE_FULL:
+		case POWER_BATTERY_STATE_UNKNOWN:
+		case POWER_BATTERY_STATE_PENDING_CHARGE:
+			sprintf(indicator->text, " \uf211 %i%% ", p);
+			break;
+	
+		default:
+			p = lround(battery->percentage);
+			for(i = 0; i < sizeof(icon)/sizeof(Icon); i++) {
+				if(p < icon[i].percentage)
+					break;
+			}
+			if(p < icon[0].percentage)
+				sprintf(indicator->text, " <span foreground=\"red\">%s %i%%</span> ", icon[0].str, p);
+			else
+				sprintf(indicator->text, " %s %i%% ", icon[i].str, p);
+		
+			break;
+	}
+}
+
+void format_time(int64_t t, char *buf) {
+	int h, m, s;
+	
+	s = t % 60;
+	t /= 60;
+	m = t % 60;
+	h = t / 60;
+	
+	sprintf(buf, "%i:%i:%i", h, m, s);
 }
 
 void indicator_power_expose(Indicator *indicator, Window window) {
-	char status[20];
-	char *nl;
+	char text[256];
+	int64_t t;
 	
 	if(window!=menu.window)
 		return;
 	
-	FILE *stat = fopen("/sys/class/power_supply/BAT0/status", "r");
-	fread(status, 20, 1, stat);
-	if((nl = strchr(status, '\n')))
-		*nl = 0;
-	indicator_draw_text(menu.window, menu.gc, 0, 0, MENU_WIDTH, bh, dc.norm, status, False);
-	fclose(stat);
+	if(!battery) {
+		indicator_draw_text(menu.window, menu.gc, 0, 0, MENU_WIDTH, bh, dc.norm, "Unknown", False);
+		return;
+	}
+	
+	sprintf(text, "%s", state_text[battery->state]);
+	indicator_draw_text(menu.window, menu.gc, bh*0, 0, MENU_WIDTH, bh, dc.norm, text, False);
+	
+	switch(battery->state) {
+		case POWER_BATTERY_STATE_CHARGING:
+		case POWER_BATTERY_STATE_FULL:
+		case POWER_BATTERY_STATE_UNKNOWN:
+		case POWER_BATTERY_STATE_PENDING_CHARGE:
+			t = battery->time_to_full;
+			break;
+	
+		default:
+			t = battery->time_to_empty;
+	}
+	format_time(t, text);
+	indicator_draw_text(menu.window, menu.gc, bh*1, 0, MENU_WIDTH, bh, dc.norm, text, False);
+	
+	sprintf(text, "Voltage: %f V", round(battery->voltage * 10.0)/10.0);
+	indicator_draw_text(menu.window, menu.gc, bh*2, 0, MENU_WIDTH, bh, dc.norm, text, False);
+	
+	sprintf(text, "Capacity: %li%%", lround(battery->capacity));
+	indicator_draw_text(menu.window, menu.gc, bh*3, 0, MENU_WIDTH, bh, dc.norm, text, False);
 }
 
 Bool indicator_power_haswindow(Indicator *indicator, Window window) {

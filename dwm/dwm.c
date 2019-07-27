@@ -365,8 +365,8 @@ attachstack(Client *c) {
 }
 
 void autostart(void) {
-	system("cd ~/.dwm; ./autostart_blocking.sh");
-	system("cd ~/.dwm; ./autostart.sh &");
+	//system("cd ~/.dwm; ./autostart_blocking.sh");
+	//system("cd ~/.dwm; ./autostart.sh &");
 }
 
 void
@@ -1913,7 +1913,7 @@ setup(void) {
 	indicator_add(indicator_music_init, indicator_music_update, indicator_music_expose, indicator_music_haswindow, indicator_music_mouse);
 	indicator_add(indicator_disk_init, indicator_disk_update, indicator_disk_expose, indicator_disk_haswindow, indicator_disk_mouse);
 	indicator_add(indicator_power_init, indicator_power_update, indicator_power_expose, indicator_power_haswindow, indicator_power_mouse);
-	indicator_add(indicator_upgrade_init, indicator_upgrade_update, indicator_upgrade_expose, indicator_upgrade_haswindow, indicator_upgrade_mouse);
+	//indicator_add(indicator_upgrade_init, indicator_upgrade_update, indicator_upgrade_expose, indicator_upgrade_haswindow, indicator_upgrade_mouse);
 }
 
 void

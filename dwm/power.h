@@ -25,6 +25,8 @@ struct PowerBattery {
 	PowerBatteryState state;
 };
 
+PowerBattery *power_battery_status();
+
 void power_logout();
 void power_shutdown();
 void power_restart();
