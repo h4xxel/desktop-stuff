@@ -365,8 +365,8 @@ attachstack(Client *c) {
 }
 
 void autostart(void) {
-	//system("cd ~/.dwm; ./autostart_blocking.sh");
-	//system("cd ~/.dwm; ./autostart.sh &");
+	system("cd ~/.dwm; ./autostart_blocking.sh");
+	system("cd ~/.dwm; ./autostart.sh &");
 }
 
 void
@@ -1905,7 +1905,9 @@ setup(void) {
 	exepath=get_dwm_path();
 	
 	dbus_init();
+	#if USE_CONSOLEKIT
 	ck_init();
+	#endif
 	keyring_init();
 	
 	indicator_add(indicator_logout_init, indicator_logout_update, indicator_logout_expose, indicator_logout_haswindow, indicator_logout_mouse);
@@ -2651,7 +2653,9 @@ main(int argc, char *argv[]) {
 	run();
 	cleanup();
 	XCloseDisplay(dpy);
+	#if USE_CONSOLEKIT
 	ck_exit();
+	#endif
 	return EXIT_SUCCESS;
 }
 

@@ -7,7 +7,7 @@
 #include "indicator.h"
 #include "power.h"
 
-#define MENU_WIDTH 128
+#define MENU_WIDTH 200
 
 static struct {
 	Window window;
@@ -64,8 +64,8 @@ static void menu_close() {
 }
 
 int indicator_power_init(Indicator *indicator) {
-	if(!(battery = power_battery_status()))
-		return -1;
+	//if(!(battery = power_battery_status()))
+	//	return -1;
 	
 	return 0;
 }
@@ -106,7 +106,7 @@ void indicator_power_update(Indicator *indicator) {
 	}
 }
 
-void format_time(int64_t t, char *buf) {
+void format_time(int64_t t, char *buf, const char *header, const char *footer) {
 	int h, m, s;
 	
 	s = t % 60;
@@ -114,7 +114,7 @@ void format_time(int64_t t, char *buf) {
 	m = t % 60;
 	h = t / 60;
 	
-	sprintf(buf, "%i:%i:%i", h, m, s);
+	sprintf(buf, "%s%i:%i%s", header, h, m, footer);
 }
 
 void indicator_power_expose(Indicator *indicator, Window window) {
@@ -130,7 +130,7 @@ void indicator_power_expose(Indicator *indicator, Window window) {
 	}
 	
 	sprintf(text, "%s", state_text[battery->state]);
-	indicator_draw_text(menu.window, menu.gc, bh*0, 0, MENU_WIDTH, bh, dc.norm, text, False);
+	indicator_draw_text(menu.window, menu.gc, 0, bh*0, MENU_WIDTH, bh, dc.norm, text, False);
 	
 	switch(battery->state) {
 		case POWER_BATTERY_STATE_CHARGING:
@@ -138,19 +138,24 @@ void indicator_power_expose(Indicator *indicator, Window window) {
 		case POWER_BATTERY_STATE_UNKNOWN:
 		case POWER_BATTERY_STATE_PENDING_CHARGE:
 			t = battery->time_to_full;
+			if(!t)
+				text[0] = 0;
+			else
+				format_time(t, text, "Time until charged: ", "");
 			break;
 	
 		default:
 			t = battery->time_to_empty;
+			format_time(t, text, "Time until empty: ", "");
 	}
-	format_time(t, text);
-	indicator_draw_text(menu.window, menu.gc, bh*1, 0, MENU_WIDTH, bh, dc.norm, text, False);
 	
-	sprintf(text, "Voltage: %f V", round(battery->voltage * 10.0)/10.0);
-	indicator_draw_text(menu.window, menu.gc, bh*2, 0, MENU_WIDTH, bh, dc.norm, text, False);
+	indicator_draw_text(menu.window, menu.gc, 0, bh*1, MENU_WIDTH, bh, dc.norm, text, False);
 	
-	sprintf(text, "Capacity: %li%%", lround(battery->capacity));
-	indicator_draw_text(menu.window, menu.gc, bh*3, 0, MENU_WIDTH, bh, dc.norm, text, False);
+	sprintf(text, "Voltage: %.1f V", round(battery->voltage * 10.0)/10.0);
+	indicator_draw_text(menu.window, menu.gc, 0, bh*2, MENU_WIDTH, bh, dc.norm, text, False);
+	
+	sprintf(text, "Battery health: %li%%", lround(battery->capacity));
+	indicator_draw_text(menu.window, menu.gc, 0, bh*3, MENU_WIDTH, bh, dc.norm, text, False);
 }
 
 Bool indicator_power_haswindow(Indicator *indicator, Window window) {
