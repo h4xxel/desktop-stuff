@@ -23,7 +23,7 @@
 
 #include "dwm.h"
 #include "dbus.h"
-
+#include "power.h"
 
 /* function declarations */
 static void applyrules(Client *c);
