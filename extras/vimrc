@@ -1,0 +1,23 @@
+set nocompatible " vim mode
+set t_Co=256 " fick yeah
+syntax enable " syntax highlighting
+set encoding=utf-8 " goin' international
+filetype plugin indent on " load file type plugins + indentation
+filetype on " something with filetypes i guess?
+set autoindent " precisely.
+set si " smart indent. is it good? is it bad? i don't know. it seems to work well
+set hlsearch " highlight search results
+" dehighlights search results at the press of ,/
+nmap <silent> ,/ :nohlsearch<CR>
+set incsearch " jump to first result automagically
+
+set nobackup " don't create backup files
+set noswapfile " don't create the swap files (i save often enough anyway)
+set title " set the terminal title according to the open buffer
+
+set nostartofline " try to keep the column while jumping
+set nowrap " don't wrap lines
+set tabstop=8 shiftwidth=8 " tabs are two spaces wide...
+set bs=indent,eol,start " backspace plows through everything
+set ruler " linenumber and stuff at the bottom
+set number " line numbers at the side
