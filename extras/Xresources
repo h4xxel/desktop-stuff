@@ -1,0 +1,8 @@
+UXTerm*locale: true
+XTerm*locale: true
+
+*vt100.foreground: white
+*vt100.background: black
+
+XTerm*charClass: 33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
+XTerm*on3Clicks: regex ([[:alpha:]]+://)?([[:alnum:]!#+,./=?@_~-]|(%[[:xdigit:]][[:xdigit:]]))+
