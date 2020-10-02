@@ -3,6 +3,7 @@
 export USER=`id -nu`
 
 B='#00000000'  # blank
+A='#0000007F'  # blank ish
 C='#ffffff22'  # clear ish
 D='#ffffffcc'  # default
 T='#eeeeeeee'  # text
@@ -17,7 +18,7 @@ LC_ALL=C i3lock -n -e \
 --insidewrongcolor=$C \
 --ringwrongcolor=$W   \
 \
---insidecolor=$B      \
+--insidecolor=$A      \
 --ringcolor=$D        \
 --linecolor=$B        \
 --separatorcolor=$D   \
