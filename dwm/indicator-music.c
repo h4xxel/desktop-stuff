@@ -55,11 +55,13 @@ static struct {
 
 static struct {
 	snd_mixer_t *handle;
-	snd_mixer_elem_t* elem;
-	snd_mixer_selem_id_t *sid;
+	snd_mixer_elem_t* elem_play;
+	snd_mixer_elem_t* elem_cap;
 	const char* card;
-	const char* mix_name;
-	int mix_index;
+	const char* mix_name_play;
+	const char* mix_name_cap;
+	int mix_index_play;
+	int mix_index_cap;
 	long minv;
 	long maxv;
 } alsa={
@@ -68,6 +70,8 @@ static struct {
 	NULL,
 	"default",
 	"Master",
+	"Capture",
+	0,
 	0,
 };
 
@@ -414,7 +418,7 @@ static void check_bus() {
 
 static long volume_get() {
 	long volume;
-	if(snd_mixer_selem_get_playback_volume(alsa.elem, 0, &volume)<0)
+	if(snd_mixer_selem_get_playback_volume(alsa.elem_play, 0, &volume)<0)
 		return -1;
 	
 	volume-=alsa.minv;
@@ -428,19 +432,31 @@ static void volume_set(long volume) {
 		volume=100L;
 	
 	volume=(volume*((long) (alsa.maxv-alsa.minv)))/100L+alsa.minv;
-	snd_mixer_selem_set_playback_volume(alsa.elem, 0, volume);
-	snd_mixer_selem_set_playback_volume(alsa.elem, 1, volume);
+	snd_mixer_selem_set_playback_volume(alsa.elem_play, 0, volume);
+	snd_mixer_selem_set_playback_volume(alsa.elem_play, 1, volume);
 }
 
 static void mute_set(Bool mute) {
-	if(snd_mixer_selem_has_playback_switch(alsa.elem))
-		snd_mixer_selem_set_playback_switch_all(alsa.elem, !mute);
+	if(snd_mixer_selem_has_playback_switch(alsa.elem_play))
+		snd_mixer_selem_set_playback_switch_all(alsa.elem_play, !mute);
 }
 
 static Bool mute_get() {
 	int active=1;
-	if(snd_mixer_selem_has_playback_switch(alsa.elem))
-		snd_mixer_selem_get_playback_switch(alsa.elem, 0, &active);
+	if(snd_mixer_selem_has_playback_switch(alsa.elem_play))
+		snd_mixer_selem_get_playback_switch(alsa.elem_play, 0, &active);
+	return !active;
+}
+
+static void mute_mic_set(Bool mute) {
+	if(snd_mixer_selem_has_capture_switch(alsa.elem_cap))
+		snd_mixer_selem_set_capture_switch_all(alsa.elem_cap, !mute);
+}
+
+static Bool mute_mic_get() {
+	int active=1;
+	if(snd_mixer_selem_has_capture_switch(alsa.elem_cap))
+		snd_mixer_selem_get_capture_switch(alsa.elem_cap, 0, &active);
 	return !active;
 }
 
@@ -500,11 +516,17 @@ int indicator_music_init(Indicator *indicator) {
 		return -1;
 	}
 	
+	snd_mixer_selem_id_t *sid_play;
+	snd_mixer_selem_id_t *sid_cap;
 	/*init alsa*/
-	snd_mixer_selem_id_alloca(&alsa.sid);
-	snd_mixer_selem_id_set_index(alsa.sid, alsa.mix_index);
-	snd_mixer_selem_id_set_name(alsa.sid, alsa.mix_name);
+	snd_mixer_selem_id_alloca(&sid_play);
+	snd_mixer_selem_id_set_index(sid_play, alsa.mix_index_play);
+	snd_mixer_selem_id_set_name(sid_play, alsa.mix_name_play);
 	
+	snd_mixer_selem_id_alloca(&sid_cap);
+	snd_mixer_selem_id_set_index(sid_cap, alsa.mix_index_cap);
+	snd_mixer_selem_id_set_name(sid_cap, alsa.mix_name_cap);
+
 	if((snd_mixer_open(&alsa.handle, 0))<0)
 		return -1;
 	if((snd_mixer_attach(alsa.handle, alsa.card))<0) {
@@ -519,12 +541,16 @@ int indicator_music_init(Indicator *indicator) {
 		snd_mixer_close(alsa.handle);
 		return -1;
 	}
-	if(!(alsa.elem=snd_mixer_find_selem(alsa.handle, alsa.sid))) {
+	if(!(alsa.elem_play = snd_mixer_find_selem(alsa.handle, sid_play))) {
+		snd_mixer_close(alsa.handle);
+		return -1;
+	}
+	if(!(alsa.elem_cap = snd_mixer_find_selem(alsa.handle, sid_cap))) {
 		snd_mixer_close(alsa.handle);
 		return -1;
 	}
 	
-	snd_mixer_selem_get_playback_volume_range (alsa.elem, &alsa.minv, &alsa.maxv);
+	snd_mixer_selem_get_playback_volume_range (alsa.elem_play, &alsa.minv, &alsa.maxv);
 	return 0;
 }
 
@@ -676,4 +702,9 @@ void alsa_volume(const Arg *a) {
 void alsa_mute_toggle(const Arg *a) {
 	snd_mixer_handle_events(alsa.handle);
 	mute_set(!mute_get());
+}
+
+void alsa_mute_mic_toggle(const Arg *a) {
+	snd_mixer_handle_events(alsa.handle);
+	mute_mic_set(!mute_mic_get());
 }

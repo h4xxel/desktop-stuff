@@ -245,5 +245,6 @@ void indicator_logout_mouse(Indicator *indicator, XButtonPressedEvent *ev);
 
 void alsa_volume(const Arg *a);
 void alsa_mute_toggle(const Arg *a);
+void alsa_mute_mic_toggle(const Arg *a);
 
 #endif

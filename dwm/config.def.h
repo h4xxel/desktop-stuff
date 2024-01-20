@@ -138,6 +138,7 @@ static Key keys[] = {
 	{0,		XF86XK_AudioRaiseVolume,	alsa_volume,		{.i = +3}},
 	{0,		XF86XK_AudioLowerVolume,	alsa_volume,		{.i = -3}},
 	{0,		XF86XK_AudioMute,		alsa_mute_toggle,	{0}},
+	{0,		XF86XK_AudioMicMute,		alsa_mute_mic_toggle,	{0}},
 	
 	{0,		XF86XK_MonBrightnessUp,		spawn,			{.v = brigthness_up}},
 	{0,		XF86XK_MonBrightnessDown,	spawn,			{.v = brigthness_down}},
