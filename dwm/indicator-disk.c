@@ -72,7 +72,7 @@ static void menu_open(Indicator *indicator) {
 	
 	menu.selected=-1;
 	menu.x=selmon->mx+indicator->x-MENU_WIDTH+indicator->width;
-	menu.y=bh;
+	menu.y=selmon->my+bh;
 	menu.w=MENU_WIDTH;
 	menu.h=bh*mounts;
 	menu.window=XCreateSimpleWindow(dpy, root, 

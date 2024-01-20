@@ -365,7 +365,7 @@ static void menu_open(Indicator *indicator) {
 	for(mp=mediaplayer, i=0; mp; mp=mp->next, i++);
 	menu.selected=-1;
 	menu.x=selmon->mx+indicator->x-MENU_WIDTH+indicator->width;
-	menu.y=bh;
+	menu.y=selmon->my+bh;
 	menu.w=MENU_WIDTH;
 	menu.h=bh*2+bh*5*i;
 	menu.window=XCreateSimpleWindow(dpy, root, 
