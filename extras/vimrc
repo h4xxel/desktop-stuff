@@ -17,7 +17,40 @@ set title " set the terminal title according to the open buffer
 
 set nostartofline " try to keep the column while jumping
 set nowrap " don't wrap lines
-set tabstop=8 shiftwidth=8 " tabs are two spaces wide...
+set tabstop=8 shiftwidth=0
+set softtabstop=-1
+set noexpandtab
+let g:detectindent_preferred_indent = 8 
+
+
 set bs=indent,eol,start " backspace plows through everything
 set ruler " linenumber and stuff at the bottom
 set number " line numbers at the side
+
+set hidden
+
+call plug#begin('~/.vim/plugged')
+
+Plug 'roryokane/detectindent'
+Plug 'preservim/nerdtree'
+Plug 'vim-ctrlspace/vim-ctrlspace'
+Plug 'arrufat/vala.vim'
+Plug 'easymotion/vim-easymotion'
+Plug 'tikhomirov/vim-glsl'
+Plug 'rafi/awesome-vim-colorschemes'
+Plug 'vim-airline/vim-airline'
+Plug 'bling/vim-bufferline'
+
+call plug#end()
+
+colorscheme minimalist
+
+augroup PythonTabs
+   autocmd!
+   autocmd FileType python setlocal noexpandtab tabstop=8 shiftwidth=0 softtabstop=-1
+augroup END
+
+augroup DetectIndent
+   autocmd!
+   autocmd BufReadPost *  DetectIndent
+augroup END
