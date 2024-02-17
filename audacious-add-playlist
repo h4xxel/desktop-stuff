@@ -1,12 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ x"$(audtool playback-status)" = x ]; then
-	audacious "$1"
+if [ -z "$(audtool playback-status)" ]; then
+	audacious "$@" &
 elif audtool playback-stopped; then
 	audtool playlist-clear
-	audtool playlist-addurl "$1"
+	audtool playlist-addurl "$@"
 	audtool playback-play
 else
-	audtool playlist-addurl "$1"
+	audtool playlist-addurl "$@"
 fi
 
