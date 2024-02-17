@@ -29,9 +29,11 @@ static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   sizehints   monitor */
 	/*{"Gimp",     NULL,       NULL,       0,            True,        -1},*/
+#if 0
 	{"Firefox",  NULL,       NULL,       1,       False, True,       1},
 	{"Pale moon",  NULL,       NULL,       1,       False, True,       1},
 	{"Chromium-browser",  NULL,       NULL,       1,       False, True,       1},
+	{"qutebrowser",  NULL,       NULL,       1,       False, True,       1},
 	
 	//{"Scite",  NULL,       NULL,       1<<2,       False, True,       0},
 	{"Geany",  NULL,       NULL,       1<<2,       False, True,      0},
@@ -49,13 +51,15 @@ static const Rule rules[] = {
 	
 	{"Thunderbird",  NULL,       NULL,       1<<7,       False, True,        0},
 	
-	{"file_progress",  NULL,       NULL,       1<<8,       True, True,       0},
-	{"Audacious",  NULL,       NULL,       1<<8,       True, True,       0},
+	//{"file_progress",  NULL,       NULL,       1<<8,       True, True,       0},
+#endif
+	{"Audacious",  NULL,       NULL,       1<<8,       False, True,       0},
 	{"Update-manager",  NULL,       NULL,       1<<8,       True, True,       0},
 	/*{"Update-manager",  NULL,       NULL,       0,       True, True,       -1},*/
 	
 	{"UXTerm", NULL, NULL, 0, False, False, -1},
 	{"XTerm", NULL, NULL, 0, False, False, -1},
+	{"URxvt", NULL, NULL, 0, False, False, -1},
 };
 
 /* layout(s) */
@@ -85,16 +89,25 @@ static const Layout layouts[] = {
 
 /* commands */
 static const char *dmenucmd[]	= {"dmenu_run", "-fn", "sans-10", "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor, NULL};
-static const char *termcmd[]	= {"uxterm", NULL};
+static const char *rofiappcmd[]	= {"rofi", "-show", "drun", NULL};
+static const char *rofiruncmd[]	= {"rofi", "-show", "run", NULL};
+static const char *rofiwindowcmd[]	= {"rofi", "-show", "window", NULL};
+static const char *rofifilecmd[]	= {"rofi", "-show", "filebrowser", NULL};
+static const char *termcmd[]	= {"urxvt", NULL};
 static const char *webcmd[]	= {"firefox", NULL};
 static const char *logoutcmd[]	= {"gnome-session-quit", NULL};
 static const char *lockcmd[]	= {"dm-tool", "lock", NULL};
 static const char *brigthness_up[]	= {"xbacklight", "-inc", "10", "-steps", "1", NULL};
 static const char *brigthness_down[]	= {"xbacklight", "-dec", "10", "-steps", "1", NULL};
+static const char *networkmanager[] = {"networkmanager_dmenu", NULL};
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-	{MODKEY,			XK_p,      spawn,          {.v = dmenucmd}},
+	{MODKEY,			XK_p,      spawn,          {.v = rofiappcmd}},
+	{MODKEY|ShiftMask,		XK_p,      spawn,          {.v = rofiruncmd}},
+	{MODKEY,			XK_o,      spawn,          {.v = rofifilecmd}},
+	{MODKEY,			XK_w,      spawn,          {.v = rofiwindowcmd}},
+	{MODKEY,			XK_c,      spawn,          {.v = networkmanager}},
 	{MODKEY|ShiftMask,		XK_Return, spawn,          {.v = termcmd}},
 	{MODKEY|ShiftMask,		XK_f, spawn,          {.v = webcmd}},
 	{MODKEY,			XK_b,      togglebar,      {0}},
@@ -134,7 +147,8 @@ static Key keys[] = {
 	{MODKEY|ShiftMask,		XK_q,		quit,		{0}},
 	
 	
-	{0,		XF86XK_Sleep,			spawn,			{.v = lockcmd}},
+	//{0,		XF86XK_Sleep,			spawn,			{.v = lockcmd}},
+	{0,		XF86XK_Favorites,			power_suspend,	{0}},
 	{0,		XF86XK_AudioRaiseVolume,	alsa_volume,		{.i = +3}},
 	{0,		XF86XK_AudioLowerVolume,	alsa_volume,		{.i = -3}},
 	{0,		XF86XK_AudioMute,		alsa_mute_toggle,	{0}},
